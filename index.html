@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BuildCalc Pro ($299) — 3D Room Material & Manual Rate Estimator</title>
+  
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: rgba(20, 27, 41, 0.85);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --cyan: #38bdf8;
+      --cyan-glow: rgba(56, 189, 248, 0.3);
+      --orange: #f97316;
+      --orange-glow: rgba(249, 115, 22, 0.3);
+      --input-bg: #0f172a;
+      --input-border: #334155;
+      --modal-bg: #1e293b;
+    }
+
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: rgba(0, 0, 0, 0.1);
+      --text: #0f172a;
+      --muted: #475569;
+      --cyan: #0284c7;
+      --cyan-glow: rgba(2, 132, 199, 0.15);
+      --orange: #ea580c;
+      --orange-glow: rgba(234, 88, 12, 0.15);
+      --input-bg: #f1f5f9;
+      --input-border: #cbd5e1;
+      --modal-bg: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.25s, color 0.25s; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 10px;
+    }
+
+    /* Top Navigation Tabs */
+    .app-header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .tab-switch {
+      display: flex;
+      background: var(--input-bg);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--input-border);
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .tab-btn.active { background: var(--cyan); color: #fff; }
+
+    .theme-btn {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* Page Sections */
+    .page { display: none; width: 100%; max-width: 900px; }
+    .page.active { display: block; }
+
+    /* Page 1: Poster Layout */
+    .poster-container {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .top-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      padding: 10px 20px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      margin-bottom: 30px;
+    }
+    .top-badge span { background: var(--cyan); color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 13px; }
+
+    /* 3D Isometric Visual Area */
+    .iso-visual {
+      position: relative;
+      width: 100%;
+      height: 340px;
+      margin: 0 auto 30px;
+      background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, rgba(0,0,0,0) 70%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .iso-box {
+      width: 280px;
+      height: 180px;
+      border: 4px solid #e2e8f0;
+      transform: rotateX(60deg) rotateZ(-45deg);
+      box-shadow: -15px 15px 30px var(--cyan-glow), 15px -15px 30px var(--orange-glow);
+      position: relative;
+      border-radius: 8px;
+    }
+
+    .callout {
+      position: absolute;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      padding: 8px 14px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+    }
+    .callout-bricks { bottom: 20px; right: 10px; border-left: 3px solid var(--cyan); }
+    .callout-cement { bottom: 60px; right: -20px; border-left: 3px solid var(--orange); }
+    .callout-sand { top: 40px; right: -30px; border-left: 3px solid #10b981; }
+
+    .btn-buy {
+      width: 100%;
+      max-width: 450px;
+      background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+      color: white;
+      border: none;
+      padding: 18px;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 0 25px var(--cyan-glow);
+      margin-bottom: 30px;
+    }
+
+    .dev-footer { text-align: center; }
+    .dev-footer h4 { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 10px; }
+    .dev-pill { display: inline-block; background: var(--input-bg); border: 1px solid var(--input-border); padding: 8px 20px; border-radius: 20px; font-weight: 800; font-size: 13px; color: var(--cyan); margin-bottom: 12px; }
+    .dev-links { display: flex; justify-content: center; gap: 20px; font-size: 14px; font-weight: 700; }
+    .dev-links a { color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+
+    /* Page 2: Calculation Engine & Manual Rates */
+    .calculator-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .input-box {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      padding: 14px;
+      border-radius: 14px;
+    }
+    .input-box label { display: block; font-size: 11px; color: var(--muted); font-weight: 800; margin-bottom: 6px; text-transform: uppercase; }
+    .input-box input, .input-box select {
+      width: 100%; background: transparent; border: none; outline: none; color: var(--text); font-size: 16px; font-weight: 700;
+    }
+
+    .section-title { font-size: 16px; font-weight: 800; margin: 25px 0 15px; display: flex; align-items: center; gap: 8px; }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .res-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+    }
+    .res-card i { font-size: 22px; color: var(--cyan); margin-bottom: 6px; }
+    .res-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    .res-card p { font-size: 11px; color: var(--muted); font-weight: 800; text-transform: uppercase; }
+
+    /* Footer Navigation Links */
+    footer {
+      width: 100%;
+      max-width: 900px;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-links a { color: var(--muted); text-decoration: none; margin-left: 15px; font-weight: 600; cursor: pointer; }
+    .footer-links a:hover { color: var(--cyan); }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+      display: none; justify-content: center; align-items: center; z-index: 1000;
+    }
+    .modal {
+      background: var(--modal-bg); border: 1px solid var(--border);
+      border-radius: 20px; width: 90%; max-width: 500px; padding: 30px; position: relative;
+    }
+    .modal h2 { font-size: 20px; margin-bottom: 12px; }
+    .modal p { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 10px; }
+    .modal-close { position: absolute; top: 20px; right: 20px; background: transparent; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <div class="app-header">
+    <div class="tab-switch">
+      <button class="tab-btn active" onclick="switchTab('page1')">3D Poster Preview</button>
+      <button class="tab-btn" onclick="switchTab('page2')">Calculator & Rates</button>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="themeIcon"></i></button>
+  </div>
+
+  <!-- Page 1: Poster Reference View -->
+  <div class="page active" id="page1">
+    <div class="poster-container">
+      <div class="top-badge">
+        BUILDCALC PRO: ROOM MATERIAL ESTIMATOR <span>$299 | SOURCE CODE</span>
+      </div>
+
+      <div class="iso-visual">
+        <div class="iso-box"></div>
+        <div class="callout callout-bricks" id="p1Bricks">1,850<br><small>BRICKS</small></div>
+        <div class="callout callout-cement" id="p1Cement">42<br><small>CEMENT BAGS</small></div>
+        <div class="callout callout-sand" id="p1Sand">180 CU.FT<br><small>SAND</small></div>
+      </div>
+
+      <button class="btn-buy" onclick="switchTab('page2')">BUY SOURCE CODE FOR $299</button>
+
+      <div class="dev-footer">
+        <h4>CUSTOM TOOL DEVELOPMENT</h4>
+        <div class="dev-pill">DEVELOPER: AHMAD MUGHAL</div>
+        <div class="dev-links">
+          <a href="https://tools-hub.vercel.app" target="_blank"><i class="fa-solid fa-globe"></i> tools-hub.vercel.app</a>
+          <a href="https://wa.me/923089423733" target="_blank"><i class="fa-brands fa-whatsapp"></i> +923089423733</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page 2: Civil Estimator Engine + Manual Price System -->
+  <div class="page" id="page2">
+    <div class="poster-container" style="text-align: left;">
+      <h2 style="margin-bottom: 20px;"><i class="fa-solid fa-ruler-combined"></i> Room Dimensions</h2>
+      
+      <div class="calculator-grid">
+        <div class="input-box">
+          <label>Room Length (FT)</label>
+          <input type="number" id="length" value="15" oninput="calculateMaterial()" />
+        </div>
+        <div class="input-box">
+          <label>Room Width (FT)</label>
+          <input type="number" id="width" value="12" oninput="calculateMaterial()" />
+        </div>
+        <div class="input-box">
+          <label>Wall Height (FT)</label>
+          <input type="number" id="height" value="10" oninput="calculateMaterial()" />
+        </div>
+        <div class="input-box">
+          <label>Wall Thickness</label>
+          <select id="thickness" onchange="calculateMaterial()">
+            <option value="9">9 Inches (Outer Wall)</option>
+            <option value="4.5">4.5 Inches (Inner Partition)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title"><i class="fa-solid fa-tags"></i> Manual Material Rates (Custom Unit Price)</div>
+      
+      <div class="calculator-grid">
+        <div class="input-box">
+          <label>Brick Price (Per Piece)</label>
+          <input type="number" id="rateBrick" value="22" oninput="calculateMaterial()" />
+        </div>
+        <div class="input-box">
+          <label>Cement Bag Price</label>
+          <input type="number" id="rateCement" value="1250" oninput="calculateMaterial()" />
+        </div>
+        <div class="input-box">
+          <label>Sand Price (Per CFT)</label>
+          <input type="number" id="rateSand" value="95" oninput="calculateMaterial()" />
+        </div>
+        <div class="input-box">
+          <label>Crush / Aggregate (Per CFT)</label>
+          <input type="number" id="rateCrush" value="120" oninput="calculateMaterial()" />
+        </div>
+        <div class="input-box">
+          <label>Steel Rebar (Per KG)</label>
+          <input type="number" id="rateSteel" value="260" oninput="calculateMaterial()" />
+        </div>
+      </div>
+
+      <div class="section-title"><i class="fa-solid fa-chart-pie"></i> Estimated Output & Budget</div>
+
+      <div class="results-grid">
+        <div class="res-card">
+          <i class="fa-solid fa-cubes"></i>
+          <h3 id="resBricks">0</h3>
+          <p>Total Bricks</p>
+        </div>
+        <div class="res-card">
+          <i class="fa-solid fa-box-open"></i>
+          <h3 id="resCement">0 Bags</h3>
+          <p>Cement Bags</p>
+        </div>
+        <div class="res-card">
+          <i class="fa-solid fa-mountain"></i>
+          <h3 id="resSand">0 Cu.Ft</h3>
+          <p>Sand (Mitti/Reth)</p>
+        </div>
+        <div class="res-card">
+          <i class="fa-solid fa-layer-group"></i>
+          <h3 id="resCrush">0 Cu.Ft</h3>
+          <p>Roof Aggregate</p>
+        </div>
+        <div class="res-card">
+          <i class="fa-solid fa-bars-staggered"></i>
+          <h3 id="resSteel">0 KG</h3>
+          <p>Steel Rebar</p>
+        </div>
+        <div class="res-card" style="border-color: var(--cyan);">
+          <i class="fa-solid fa-wallet" style="color:var(--cyan)"></i>
+          <h3 id="resTotalCost">₨ 0</h3>
+          <p>Total Est. Cost</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Footer with Institutional Links -->
+  <footer>
+    <div>© 2026 BuildCalc Pro • Ahmad Mughal</div>
+    <div class="footer-links">
+      <a onclick="openModal('aboutModal')">About Us</a>
+      <a onclick="openModal('privacyModal')">Privacy Policy</a>
+      <a onclick="openModal('termsModal')">Terms of Use</a>
+      <a onclick="openModal('contactModal')">Contact Support</a>
+    </div>
+  </footer>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="aboutModal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('aboutModal')"><i class="fa-solid fa-xmark"></i></button>
+      <h2>About BuildCalc Pro ($299)</h2>
+      <p>BuildCalc Pro is an architectural and structural estimation SaaS tool designed for civil engineers, contractors, and real estate developers.</p>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="privacyModal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('privacyModal')"><i class="fa-solid fa-xmark"></i></button>
+      <h2>Privacy Policy</h2>
+      <p>All calculations and custom material unit rates are computed locally inside your browser. No project data is transmitted externally.</p>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="termsModal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('termsModal')"><i class="fa-solid fa-xmark"></i></button>
+      <h2>Terms of Use</h2>
+      <p>BuildCalc Pro calculations are based on standard civil masonry formulas. Actual site requirements may vary by ±5% depending on brick dimensions and local site wastage.</p>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="contactModal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('contactModal')"><i class="fa-solid fa-xmark"></i></button>
+      <h2>Direct Developer Support</h2>
+      <p><strong>Hub:</strong> <a href="https://tools-hub.vercel.app" target="_blank" style="color:var(--cyan)">tools-hub.vercel.app</a></p>
+      <p><strong>WhatsApp:</strong> <a href="https://wa.me/923089423733" target="_blank" style="color:#25d366">+923089423733</a></p>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const icon = document.getElementById('themeIcon');
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.setAttribute('data-theme', 'light');
+        icon.className = 'fa-solid fa-sun';
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        icon.className = 'fa-solid fa-moon';
+      }
+    }
+
+    function calculateMaterial() {
+      const L = parseFloat(document.getElementById('length').value) || 0;
+      const W = parseFloat(document.getElementById('width').value) || 0;
+      const H = parseFloat(document.getElementById('height').value) || 0;
+      const T = parseFloat(document.getElementById('thickness').value) || 9;
+
+      const rateBrick = parseFloat(document.getElementById('rateBrick').value) || 0;
+      const rateCement = parseFloat(document.getElementById('rateCement').value) || 0;
+      const rateSand = parseFloat(document.getElementById('rateSand').value) || 0;
+      const rateCrush = parseFloat(document.getElementById('rateCrush').value) || 0;
+      const rateSteel = parseFloat(document.getElementById('rateSteel').value) || 0;
+
+      const perimeter = 2 * (L + W);
+      const wallArea = Math.max((perimeter * H) - 50, 0);
+      const volumeCFT = wallArea * (T / 12);
+
+      const bricks = Math.round(volumeCFT * (T === 9 ? 13.5 : 6.8));
+      const cement = Math.round(volumeCFT * 0.22);
+      const sand = Math.round(volumeCFT * 0.9);
+      
+      const slabArea = L * W;
+      const crush = Math.round(slabArea * 0.45);
+      const steel = Math.round(slabArea * 2.5);
+
+      const totalCost = (bricks * rateBrick) + (cement * rateCement) + (sand * rateSand) + (crush * rateCrush) + (steel * rateSteel);
+
+      // Update Page 1 Callouts
+      document.getElementById('p1Bricks').innerHTML = `${bricks.toLocaleString()}<br><small>BRICKS</small>`;
+      document.getElementById('p1Cement').innerHTML = `${cement}<br><small>CEMENT BAGS</small>`;
+      document.getElementById('p1Sand').innerHTML = `${sand} CU.FT<br><small>SAND</small>`;
+
+      // Update Page 2 Results
+      document.getElementById('resBricks').innerText = bricks.toLocaleString();
+      document.getElementById('resCement').innerText = cement + " Bags";
+      document.getElementById('resSand').innerText = sand + " Cu.Ft";
+      document.getElementById('resCrush').innerText = crush + " Cu.Ft";
+      document.getElementById('resSteel').innerText = steel + " KG";
+      document.getElementById('resTotalCost').innerText = "₨ " + totalCost.toLocaleString();
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    calculateMaterial();
+  </script>
+</body>
+</html>
